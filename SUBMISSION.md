@@ -111,7 +111,7 @@ Autonomous agents with browser and terminal control are incredibly powerful but 
    - Enable cross-agent trust
 
 3. **Sui Wallet**
-   - Address: `[YOUR_WALLET_ADDRESS_HERE]`
+   - Address: `0xe8c76a2ee8fcabb173a327a5f8228d9e18cf868ac39d2406e6e72ab13d9fba3c`
    - Network: Sui Testnet
    - Used for: Transaction signing and gas fees
 
@@ -138,7 +138,7 @@ Autonomous agents with browser and terminal control are incredibly powerful but 
 
 ## Demo
 
-**Video:** [LINK TO DEMO VIDEO]
+**Video:** https://www.loom.com/share/cb8c1cc4641a4e5f91e8462d024bb1c4
 
 **Demo Highlights:**
 1. Safe browsing action → Auto-approved (5 risk score)

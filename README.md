@@ -115,7 +115,7 @@ else:
 
 ## Demo
 
-[Demo video link will be added here]
+**🎥 Watch the demo:** https://www.loom.com/share/cb8c1cc4641a4e5f91e8462d024bb1c4
 
 **Demo highlights:**
 - Real-time threat detection
