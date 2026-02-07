@@ -121,6 +121,8 @@ else:
 
 **🎥 Watch the demo:** https://www.loom.com/share/cb8c1cc4641a4e5f91e8462d024bb1c4
 
+**🔗 Verify on-chain:** https://suiscan.xyz/testnet/account/0xe8c76a2ee8fcabb173a327a5f8228d9e18cf868ac39d2406e6e72ab13d9fba3c
+
 **Demo highlights:**
 - Real-time threat detection
 - Blockchain logging to Sui/Walrus
