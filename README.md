@@ -1,5 +1,9 @@
 # Agent Immune Memory
 
+<p align="center">
+  <img src="logo.jpg" alt="Agent Immune Memory" width="400"/>
+</p>
+
 An autonomous compliance and immune system layer for OpenClaw agents.
 
 ## What it does
