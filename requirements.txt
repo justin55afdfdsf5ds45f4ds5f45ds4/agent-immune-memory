@@ -1,9 +1,5 @@
-# Core dependencies
-requests>=2.31.0
-pysui>=0.50.0
+# No external dependencies required
+# Uses Python standard library only
 
-# Storage and data
-python-dotenv>=1.0.0
-
-# Utilities
-colorama>=0.4.6
+# Optional: For real Sui/Walrus integration (not required for demo)
+# pysui>=0.50.0
