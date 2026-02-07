@@ -18,7 +18,8 @@ class AgentImmuneSystem:
         agent_id: str = "EmpusaAI",
         wallet_address: Optional[str] = None,
         demo_mode: bool = True,
-        testnet: bool = True
+        testnet: bool = True,
+        sui_binary: str = "sui"
     ):
         """
         Initialize the complete immune system
@@ -28,6 +29,7 @@ class AgentImmuneSystem:
             wallet_address: Sui wallet address
             demo_mode: Demo mode for testing
             testnet: Use Sui testnet
+            sui_binary: Path to sui binary
         """
         self.agent_id = agent_id
         
@@ -38,7 +40,7 @@ class AgentImmuneSystem:
         
         # Initialize components
         self.kernel = ComplianceKernel(demo_mode=demo_mode)
-        self.logger = SuiLogger(wallet_address=wallet_address, testnet=testnet)
+        self.logger = SuiLogger(wallet_address=wallet_address, testnet=testnet, sui_binary=sui_binary)
         self.registry = ThreatRegistry()
         
         print()
@@ -135,7 +137,7 @@ class AgentImmuneSystem:
         }
 
 
-def run_demo():
+def run_demo(sui_binary="sui"):
     """Run a complete demo of the immune system"""
     print("\n\n")
     print("╔" + "="*58 + "╗")
@@ -146,9 +148,9 @@ def run_demo():
     # Initialize system
     system = AgentImmuneSystem(
         agent_id="EmpusaAI",
-        wallet_address="0xDEMO_WALLET_ADDRESS_123456789",
         demo_mode=True,
-        testnet=True
+        testnet=True,
+        sui_binary=sui_binary
     )
     
     # Demo scenarios
@@ -189,6 +191,7 @@ def run_demo():
     for i, scenario in enumerate(scenarios, 1):
         print(f"\n\n{'#'*60}")
         print(f"# SCENARIO {i}: {scenario['name']}")
+        print(f"# Action: {scenario['action']}")
         print(f"# Expected: {scenario['expected']}")
         print(f"{'#'*60}")
         
@@ -225,4 +228,9 @@ def run_demo():
 
 if __name__ == "__main__":
     import json
-    run_demo()
+    import sys
+    
+    # Get sui binary path from command line or use default
+    sui_binary = sys.argv[1] if len(sys.argv) > 1 else "sui"
+    
+    run_demo(sui_binary)

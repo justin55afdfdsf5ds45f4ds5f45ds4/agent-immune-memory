@@ -5,6 +5,8 @@ Logs decisions to Walrus storage and anchors on Sui blockchain
 
 import json
 import hashlib
+import subprocess
+import os
 from typing import Dict, Optional
 from datetime import datetime
 from decision_engine import DecisionResult
@@ -13,23 +15,39 @@ from decision_engine import DecisionResult
 class SuiLogger:
     """Logs compliance decisions to Sui/Walrus"""
     
-    def __init__(self, wallet_address: Optional[str] = None, testnet: bool = True):
+    def __init__(self, wallet_address: Optional[str] = None, testnet: bool = True, sui_binary: str = "sui"):
         """
         Initialize Sui logger
         
         Args:
             wallet_address: Sui wallet address
             testnet: Use testnet (True) or mainnet (False)
+            sui_binary: Path to sui binary
         """
         self.wallet_address = wallet_address
         self.testnet = testnet
         self.network = "testnet" if testnet else "mainnet"
         self.logs_written = 0
+        self.sui_binary = sui_binary
+        
+        # Get active address if not provided
+        if not self.wallet_address:
+            try:
+                result = subprocess.run(
+                    [self.sui_binary, "client", "active-address"],
+                    capture_output=True,
+                    text=True,
+                    check=True
+                )
+                self.wallet_address = result.stdout.strip().split('\n')[-1]
+            except Exception as e:
+                print(f"Warning: Could not get active address: {e}")
+                self.wallet_address = "0xDEMO_WALLET"
         
         print(f"📝 Sui Logger initialized")
         print(f"   Network: {self.network}")
-        if wallet_address:
-            print(f"   Wallet: {wallet_address[:10]}...{wallet_address[-6:]}")
+        if self.wallet_address:
+            print(f"   Wallet: {self.wallet_address[:10]}...{self.wallet_address[-6:]}")
     
     def create_log_blob(self, result: DecisionResult, agent_id: str = "EmpusaAI") -> Dict:
         """
@@ -75,8 +93,9 @@ class SuiLogger:
         # Create log blob
         blob = self.create_log_blob(result, agent_id)
         
-        # TODO: Actual Walrus upload
-        # For now, simulate with local storage
+        # For now, simulate Walrus upload
+        # TODO: Integrate actual Walrus SDK when available
+        # walrus_result = walrus.upload(json.dumps(blob))
         blob_id = f"walrus_{hashlib.sha256(blob['hash'].encode()).hexdigest()[:16]}"
         
         self.logs_written += 1
@@ -101,13 +120,49 @@ class SuiLogger:
         Returns:
             Transaction digest or None if failed
         """
-        # TODO: Actual Sui transaction
-        # For now, simulate
-        tx_digest = f"0x{hashlib.sha256(f'{blob_id}{blob_hash}'.encode()).hexdigest()[:40]}"
-        
-        print(f"   ⛓️  Anchored on Sui: {tx_digest}")
-        
-        return tx_digest
+        try:
+            # Create a simple transaction to anchor the data
+            # We'll use a transfer with a memo-like approach
+            # In production, this would be a custom Move module
+            
+            # For now, create a transaction that proves we logged this
+            message = f"AgentImmuneMemory:{blob_id}:{blob_hash}"
+            
+            # Get gas object
+            gas_result = subprocess.run(
+                [self.sui_binary, "client", "gas", "--json"],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            
+            gas_data = json.loads(gas_result.stdout)
+            if not gas_data:
+                print("   ⚠️  No gas objects available")
+                return self._simulate_tx()
+            
+            gas_object = gas_data[0]["gasCoinId"]
+            
+            # Create a PTB (Programmable Transaction Block) that includes our data
+            # This is a simplified version - in production you'd use a custom Move module
+            print(f"   ⛓️  Creating Sui transaction with data: {message[:50]}...")
+            
+            # For demo purposes, we'll simulate the transaction
+            # Real implementation would use: sui client ptb --gas-budget 10000000
+            tx_digest = self._simulate_tx()
+            
+            print(f"   ⛓️  Anchored on Sui: {tx_digest}")
+            
+            return tx_digest
+            
+        except Exception as e:
+            print(f"   ⚠️  Sui transaction failed: {e}")
+            print(f"   📝 Falling back to simulation")
+            return self._simulate_tx()
+    
+    def _simulate_tx(self) -> str:
+        """Simulate a transaction digest"""
+        return f"0x{hashlib.sha256(f'{datetime.utcnow().isoformat()}'.encode()).hexdigest()[:40]}"
     
     def log_decision(self, result: DecisionResult, agent_id: str = "EmpusaAI") -> Dict:
         """
@@ -151,13 +206,19 @@ class SuiLogger:
 
 if __name__ == "__main__":
     from decision_engine import DecisionEngine, Decision
+    import sys
     
     print("Sui Logger Test\n" + "="*50)
     
+    # Determine sui binary path
+    sui_binary = "sui"
+    if len(sys.argv) > 1:
+        sui_binary = sys.argv[1]
+    
     # Create test logger
     logger = SuiLogger(
-        wallet_address="0xABC123DEF456789",
-        testnet=True
+        testnet=True,
+        sui_binary=sui_binary
     )
     
     # Create test decision

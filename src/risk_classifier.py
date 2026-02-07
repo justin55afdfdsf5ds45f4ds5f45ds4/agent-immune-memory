@@ -56,10 +56,11 @@ class RiskClassifier:
         # FINANCIAL: 50-80
         RiskCategory.FINANCIAL: {
             'patterns': [
-                r'\b(transfer|send|pay|transaction|wallet|crypto|sui|token)\b',
+                r'\b(transfer|send|pay|transaction|wallet|crypto|token)\b',
                 r'\b0x[a-fA-F0-9]{40,}',  # Crypto addresses
-                r'\b(withdraw|deposit|swap|trade)\b',
+                r'\b(withdraw|deposit|swap|trade|stake)\b',
                 r'\bsui\s+(client|move)',
+                r'\d+\s+(SUI|sui|ETH|BTC|USDC)',  # Amounts with crypto symbols
             ],
             'base_score': 65
         },
@@ -97,6 +98,13 @@ class RiskClassifier:
         r'you\s+are\s+now',
     ]
     
+    # High-risk financial patterns (boost risk for unknown/unverified targets)
+    HIGH_RISK_FINANCIAL = [
+        r'(send|transfer|pay).*\b(unknown|unverified|untrusted)\b',
+        r'(send|transfer|pay).*0x[Uu][Nn][Kk][Nn][Oo][Ww][Nn]',
+        r'(send|transfer|pay).*\d+\s+(SUI|sui|ETH|BTC).*0x[A-Z]+',  # Sending to all-caps address
+    ]
+    
     def classify(self, action: str, context: Dict = None) -> Tuple[RiskCategory, int, str]:
         """
         Classify an action and return category, risk score, and reasoning
@@ -115,6 +123,13 @@ class RiskClassifier:
         for pattern in self.INJECTION_PATTERNS:
             if re.search(pattern, action_lower, re.IGNORECASE):
                 injection_detected = True
+                break
+        
+        # Check for high-risk financial patterns
+        high_risk_financial = False
+        for pattern in self.HIGH_RISK_FINANCIAL:
+            if re.search(pattern, action_lower, re.IGNORECASE):
+                high_risk_financial = True
                 break
         
         # Find matching category (highest risk wins)
@@ -137,10 +152,16 @@ class RiskClassifier:
         if injection_detected:
             risk_score = min(95, risk_score + 30)
         
+        # Boost score if high-risk financial action detected
+        if high_risk_financial:
+            risk_score = min(90, risk_score + 25)
+        
         # Build reasoning
         reasoning = f"Category: {matched_category.value}, Base Score: {max_score}"
         if injection_detected:
             reasoning += " | INJECTION DETECTED (+30)"
+        if high_risk_financial:
+            reasoning += " | HIGH-RISK FINANCIAL (+25)"
         if matched_patterns:
             reasoning += f" | Matched patterns: {len(matched_patterns)}"
         

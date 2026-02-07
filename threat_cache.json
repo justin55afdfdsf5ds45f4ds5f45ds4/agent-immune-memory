@@ -18,5 +18,15 @@
     "timestamp": "2026-02-07T11:15:39.916329Z",
     "severity": "critical",
     "risk_score": 95
+  },
+  {
+    "threat_id": "29e581b5c7463c9e",
+    "threat_type": "malicious_address",
+    "pattern": "send 50 SUI to 0xUNKNOWN_ADDRESS",
+    "source_hash": "8fdb34732589327f7f3bad17c90484227a21077ce40e02983083bc64bf4adf47",
+    "reporter_agent": "EmpusaAI",
+    "timestamp": "2026-02-07T14:02:59.542589Z",
+    "severity": "critical",
+    "risk_score": 90
   }
 ]
